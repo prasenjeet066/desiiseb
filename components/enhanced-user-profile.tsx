@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ModernVideoCard from "./modern-video-card"
 import { Users, Eye, Heart, Video, Calendar, MapPin, LinkIcon, Settings, Bell, Share2, Grid, List } from "lucide-react"
 import ProfileSkeleton from "./skeletons/profile-skeleton"
-
+import { useRouter } from "next/navigation"
 interface EnhancedUserProfileProps {
   user: User
 }
@@ -76,7 +76,11 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
   const handleEdit = async () => {
     return null;
   }
+   // ... rest of your imports
 
+export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) { // ... const router = useRouter();
+
+const handleEdit = () => { router.push("/profile/edit"); }
   const formatNumber = (num: number) => {
     if (num < 1000) return num.toString()
     if (num < 1000000) return `${(num / 1000).toFixed(1)}K`
