@@ -1,0 +1,284 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Vampiro One font for logo */
+@import url("https://fonts.googleapis.com/css2?family=Vampiro+One&display=swap");
+
+@layer base {
+  :root {
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 3%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 98%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Logo font styling */
+.logo-font {
+  font-family: "Vampiro One", cursive;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(0 0% 8%);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(0 0% 25%);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(0 0% 35%);
+}
+
+/* Remove shadows globally */
+* {
+  box-shadow: none !important;
+}
+
+/* Text utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Smooth animations */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Logo gradient text with Vampiro One font */
+.logo-gradient-text {
+  font-family: "Vampiro One", cursive;
+  background: linear-gradient(135deg, #ffffff 0%, #e5e7eb 50%, #9ca3af 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Hover effects */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black;
+}
+
+/* Button variants */
+.btn-primary {
+  @apply bg-white text-black hover:bg-gray-100 focus-ring rounded-full;
+}
+
+.btn-secondary {
+  @apply bg-gray-800 text-white hover:bg-gray-700 border border-gray-700 focus-ring rounded-full;
+}
+
+.btn-ghost {
+  @apply bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white focus-ring rounded-full;
+}
+
+/* Global button styling */
+button,
+.btn,
+[role="button"] {
+  @apply rounded-full;
+}
+
+/* Ensure all shadcn buttons are rounded-full */
+.inline-flex.items-center.justify-center {
+  @apply rounded-full;
+}
+
+/* Card styles */
+.card-hover {
+  @apply transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply animate-pulse bg-gray-800 rounded;
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Video player enhancements */
+.video-container {
+  @apply relative overflow-hidden rounded-xl bg-black;
+}
+
+.video-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300;
+}
+
+.video-container:hover .video-overlay {
+  @apply opacity-100;
+}
+
+/* Form styles */
+.form-input {
+  @apply bg-gray-900 border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-white/20 rounded-lg;
+}
+
+.form-label {
+  @apply text-sm font-medium text-gray-200 mb-2 block;
+}
+
+/* Navigation styles */
+.nav-link {
+  @apply text-gray-300 hover:text-white transition-colors duration-200 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800;
+}
+
+.nav-link.active {
+  @apply text-white bg-gray-800;
+}
+
+/* Badge styles */
+.badge-primary {
+  @apply bg-white text-black text-xs font-medium px-2 py-1 rounded-full;
+}
+
+.badge-secondary {
+  @apply bg-gray-800 text-gray-300 text-xs font-medium px-2 py-1 rounded-full border border-gray-700;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .mobile-hidden {
+    @apply hidden;
+  }
+
+  .mobile-full {
+    @apply w-full;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
