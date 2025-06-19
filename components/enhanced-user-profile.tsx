@@ -99,6 +99,27 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Profile Header */}
+      <div className="flex gap-8 animate-fade-in">
+  {/* Sidebar */}
+  <aside className="hidden md:block w-64 bg-gray-900 rounded-lg p-6 h-fit self-start">
+    <h2 className="text-lg font-semibold text-white mb-4">Sidebar</h2>
+    <ul className="space-y-2">
+      <li>
+        <a href="/dashboard" className="text-gray-300 hover:text-white">Dashboard</a>
+      </li>
+      <li>
+        <a href="/profile/edit" className="text-gray-300 hover:text-white">Edit Profile</a>
+      </li>
+      <li>
+        <a href="/settings" className="text-gray-300 hover:text-white">Settings</a>
+      </li>
+      {/* Add more sidebar items as needed */}
+    </ul>
+  </aside>
+
+  {/* Main Profile Content */}
+  <div className="flex-1 space-y-8">
+    {/* ...paste your current profile code here (everything previously in the outer div)... */
       <div className="relative">
         {/* Cover Image */}
         <div className="h-48 md:h-64 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg overflow-hidden">
@@ -366,5 +387,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
         </Tabs>
       </div>
     </div>
+        </div>
+      </div>
   )
 }
