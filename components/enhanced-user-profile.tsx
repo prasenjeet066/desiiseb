@@ -119,7 +119,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
 
   {/* Main Profile Content */}
   <div className="flex-1 space-y-8">
-    {/* ...paste your current profile code here (everything previously in the outer div)... */
+    /* ...paste your current profile code here (everything previously in the outer div)... */
       <div className="relative">
         {/* Cover Image */}
         <div className="h-48 md:h-64 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg overflow-hidden">
@@ -387,8 +387,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
         </Tabs>
       </div>
     </div>
-   </div>
-      
- </div>
+   </div>  
+      </div>
   )
 }
