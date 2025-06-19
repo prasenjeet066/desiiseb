@@ -178,7 +178,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
         <div className="relative -mt-16 px-4 md:px-6">
           <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
             <div className="relative">
-              <Avatar className="w-24 h-24 md:w-32 md:h-32 border-[8px] border-black bg-gray-800">
+              <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-black bg-gray-800">
                 <AvatarImage src={profile?.avatar_url || "/placeholder.svg?height=120&width=120"} alt="Profile" />
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl md:text-4xl">
                   {(profile?.display_name || profile?.channel_name || user.email)?.charAt(0)?.toUpperCase()}
@@ -220,12 +220,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
                       Edit Profile
                     </Button>
                   </Link>
-                  <Link href="/studio">
-                    <Button className="bg-yellow-400 text-black hover:bg-gray-200">
-                      <Edit className="w-4 h-4 mr-2" />
-                      Studio
-                    </Button>
-                  </Link>
+                  
                   
 
                   <DropdownMenu>
