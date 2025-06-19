@@ -387,7 +387,8 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
         </Tabs>
       </div>
     </div>
-        
-      </div>
+   </div>
+      
+ </div>
   )
 }
