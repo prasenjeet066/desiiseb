@@ -73,8 +73,8 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
     }
   }
 
-  const handleFollow = async () => {
-    setIsFollowing(!isFollowing)
+  const handleEdit = async () => {
+    return null;
   }
 
   const formatNumber = (num: number) => {
@@ -137,8 +137,8 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Button onClick={handleFollow} className="bg-white text-black hover:bg-gray-200">
-                    {isFollowing ? "Following" : "Follow"}
+                  <Button onClick={handleEdit} className="bg-white text-black hover:bg-gray-200">
+                    {"Customize"}
                   </Button>
                   <Button variant="outline" size="sm" className="border-gray-600 text-white">
                     <Bell className="w-4 h-4" />
