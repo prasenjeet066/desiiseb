@@ -229,7 +229,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                  
+                    <DropdownMenuContent>
                       <DropdownMenuItem className="text-white hover:bg-gray-700">
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
