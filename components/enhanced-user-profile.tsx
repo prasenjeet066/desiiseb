@@ -160,7 +160,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
       {/* Profile Header */}
       <div className="relative">
         {/* Cover Image */}
-        <div className="h-48 md:h-64 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-lg overflow-hidden relative">
+        <div className="h-48 md:h-64 bg-white rounded-lg overflow-hidden relative">
           {profile?.cover_photo_url && (
             <img
               src={profile.cover_photo_url || "/placeholder.svg"}
@@ -178,7 +178,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
         <div className="relative -mt-16 px-4 md:px-6">
           <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
             <div className="relative">
-              <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-black bg-gray-800">
+              <Avatar className="w-24 h-24 md:w-32 md:h-32 border-[8px] border-black bg-gray-800">
                 <AvatarImage src={profile?.avatar_url || "/placeholder.svg?height=120&width=120"} alt="Profile" />
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl md:text-4xl">
                   {(profile?.display_name || profile?.channel_name || user.email)?.charAt(0)?.toUpperCase()}
@@ -215,11 +215,18 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
 
                 <div className="flex items-center gap-3 shrink-0">
                   <Link href="/profile/edit">
-                    <Button className="bg-white text-black hover:bg-gray-200">
+                    <Button className="bg-none text-white hover:bg-gray-200">
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
                   </Link>
+                  <Link href="/studio">
+                    <Button className="bg-yellow-400 text-black hover:bg-gray-200">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Studio
+                    </Button>
+                  </Link>
+                  
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -227,14 +234,7 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-gray-800 border-gray-700">
-                      <DropdownMenuItem
-                        onClick={() => router.push("/profile/edit")}
-                        className="text-white hover:bg-gray-700"
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit Profile
-                      </DropdownMenuItem>
+                  
                       <DropdownMenuItem className="text-white hover:bg-gray-700">
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
