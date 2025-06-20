@@ -82,7 +82,7 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
       setError(null)
 
       const { data, error } = await supabase
-        .from("video")
+        .from("videos")
         .select(`
           *,
           profiles (
@@ -101,7 +101,7 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
 
       // Increment view count
       await supabase
-        .from("video")
+        .from("videos")
         .update({ views: (data.views || 0) + 1 })
         .eq("id", videoId)
     } catch (err) {
@@ -117,21 +117,21 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
       setRelatedLoading(true)
 
       const { data, error } = await supabase
-        .from("video")
+        .from("videos")
         .select(`
           id,
           title,
           thumbnail_url,
           views,
-          uploaded_at,
+          created_at,
           profiles (
             full_name,
             avatar_url
           )
         `)
-        .eq("is_public", true)
+        .eq("visibility", "public")
         .neq("id", videoId)
-        .order("uploaded_at", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(10)
 
       if (error) throw error
@@ -214,7 +214,7 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  <span>{formatDistanceToNow(new Date(video.uploaded_at), { addSuffix: true })}</span>
+                  <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
                           <div className="flex items-center gap-2 text-xs text-gray-500">
                             <span>{formatNumber(relatedVideo.views)} views</span>
                             <span>•</span>
-                            <span>{formatDistanceToNow(new Date(relatedVideo.uploaded_at), { addSuffix: true })}</span>
+                            <span>{formatDistanceToNow(new Date(relatedVideo.created_at), { addSuffix: true })}</span>
                           </div>
                         </div>
                       </div>

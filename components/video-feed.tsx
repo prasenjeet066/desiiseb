@@ -46,7 +46,7 @@ export default function VideoFeed() {
       setError(null)
 
       const { data, error } = await supabase
-        .from("video")
+        .from("videos")
         .select(`
           *,
           profiles (
@@ -55,8 +55,8 @@ export default function VideoFeed() {
             avatar_url
           )
         `)
-        .eq("is_public", true)
-        .order("uploaded_at", { ascending: false })
+        .eq("visibility", "public")
+        .order("created_at", { ascending: false })
         .limit(20)
 
       if (error) throw error
