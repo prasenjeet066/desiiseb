@@ -205,7 +205,7 @@ export default function EnhancedVideoCard({
 
   if (layout === "list") {
     return (
-      <div className="bg-gray-900/50 rounded-2xl overflow-hidden flex gap-4 p-4 hover:bg-gray-800/50 transition-all duration-300 border border-gray-800/50">
+      <div className="bg-card rounded-2xl overflow-hidden flex gap-4 p-4 hover:bg-accent/50 transition-all duration-300 border border-border">
         <div className="w-48 h-28 flex-shrink-0">
           {showPlayer ? (
             <VideoPlayer
@@ -216,7 +216,7 @@ export default function EnhancedVideoCard({
               className="w-full h-full rounded-xl"
             />
           ) : (
-            <div className="relative w-full h-full bg-gray-800 rounded-xl overflow-hidden">
+            <div className="relative w-full h-full bg-muted rounded-xl overflow-hidden">
               <img
                 src={video.thumbnail_url || "/placeholder.svg"}
                 alt={video.title}
@@ -239,9 +239,9 @@ export default function EnhancedVideoCard({
               className="w-8 h-8 rounded-full flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-white text-base leading-tight line-clamp-2 mb-1">{video.title}</h3>
-              <p className="text-gray-400 text-sm font-medium mb-1">{video.channel_name}</p>
-              <div className="flex items-center text-gray-400 text-sm">
+              <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-2 mb-1">{video.title}</h3>
+              <p className="text-muted-foreground text-sm font-medium mb-1">{video.channel_name}</p>
+              <div className="flex items-center text-muted-foreground text-sm">
                 <span>{formatViews(video.views)} views</span>
                 <span className="mx-1">•</span>
                 <span>{formatTimeAgo(video.uploaded_at)}</span>
@@ -249,38 +249,53 @@ export default function EnhancedVideoCard({
             </div>
           </div>
 
-          <p className="text-gray-300 text-sm line-clamp-2">{video.description}</p>
+          <p className="text-muted-foreground text-sm line-clamp-2">{video.description}</p>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" onClick={handleLike} className="text-gray-400 hover:text-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLike}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-red-500 text-red-500" : ""}`} />
                 {video.likes}
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleDislike} className="text-gray-400 hover:text-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDislike}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 <ThumbsDown className={`w-4 h-4 mr-1 ${disliked ? "fill-red-500 text-red-500" : ""}`} />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleShare} className="text-gray-400 hover:text-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleShare}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 <Share2 className="w-4 h-4" />
               </Button>
             </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-900 border-gray-700">
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
+              <DropdownMenuContent className="bg-background border-border">
+                <DropdownMenuItem className="text-foreground hover:bg-accent">
                   <Bookmark className="w-4 h-4 mr-2" />
                   Save to playlist
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                <DropdownMenuItem className="text-foreground hover:bg-accent">
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                <DropdownMenuItem className="text-foreground hover:bg-accent">
                   <Flag className="w-4 h-4 mr-2" />
                   Report
                 </DropdownMenuItem>
@@ -296,7 +311,7 @@ export default function EnhancedVideoCard({
     <div className="group cursor-pointer">
       <div className="space-y-4">
         {/* Thumbnail Container */}
-        <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-900">
+        <div className="relative aspect-video overflow-hidden rounded-2xl bg-muted">
           {showPlayer ? (
             <VideoPlayer
               src={video.video_url}
@@ -329,11 +344,11 @@ export default function EnhancedVideoCard({
             className="w-9 h-9 rounded-full flex-shrink-0 object-cover"
           />
           <div className="flex-1 min-w-0 space-y-1">
-            <h3 className="font-semibold text-white text-base leading-tight line-clamp-2 group-hover:text-gray-200">
+            <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-2 group-hover:text-muted-foreground">
               {video.title}
             </h3>
-            <p className="text-gray-400 text-sm font-medium">{video.channel_name}</p>
-            <div className="flex items-center text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm font-medium">{video.channel_name}</p>
+            <div className="flex items-center text-muted-foreground text-sm">
               <span>{formatViews(video.views)} views</span>
               <span className="mx-1">•</span>
               <span>{formatTimeAgo(video.uploaded_at)}</span>
@@ -343,7 +358,7 @@ export default function EnhancedVideoCard({
 
         {video.category && (
           <div className="px-3">
-            <Badge variant="secondary" className="bg-gray-800/50 text-gray-300 border-gray-700">
+            <Badge variant="secondary" className="bg-secondary text-secondary-foreground border-border">
               {video.category}
             </Badge>
           </div>
@@ -352,7 +367,7 @@ export default function EnhancedVideoCard({
         {video.tags && video.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 px-3">
             {video.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-400">
+              <Badge key={index} variant="outline" className="text-xs border-border text-muted-foreground">
                 #{tag}
               </Badge>
             ))}
@@ -360,7 +375,7 @@ export default function EnhancedVideoCard({
         )}
 
         <div className="px-3">
-          <p className="text-gray-300 text-sm line-clamp-2 mb-4">{video.description}</p>
+          <p className="text-muted-foreground text-sm line-clamp-2 mb-4">{video.description}</p>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -368,7 +383,7 @@ export default function EnhancedVideoCard({
                 variant="ghost"
                 size="sm"
                 onClick={handleLike}
-                className={`text-gray-400 hover:text-white ${liked ? "text-red-500" : ""}`}
+                className={`text-muted-foreground hover:text-foreground ${liked ? "text-red-500" : ""}`}
               >
                 <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-current" : ""}`} />
                 {video.likes}
@@ -378,7 +393,7 @@ export default function EnhancedVideoCard({
                 variant="ghost"
                 size="sm"
                 onClick={handleDislike}
-                className={`text-gray-400 hover:text-white ${disliked ? "text-red-500" : ""}`}
+                className={`text-muted-foreground hover:text-foreground ${disliked ? "text-red-500" : ""}`}
               >
                 <ThumbsDown className={`w-4 h-4 mr-1 ${disliked ? "fill-current" : ""}`} />
               </Button>
@@ -390,7 +405,7 @@ export default function EnhancedVideoCard({
                   setShowComments(!showComments)
                   if (!showComments) fetchComments()
                 }}
-                className="text-gray-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <MessageCircle className="w-4 h-4 mr-1" />
                 {comments.length}
@@ -398,26 +413,31 @@ export default function EnhancedVideoCard({
             </div>
 
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" onClick={handleShare} className="text-gray-400 hover:text-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleShare}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 <Share2 className="w-4 h-4" />
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-gray-900 border-gray-700">
-                  <DropdownMenuItem className="text-white hover:bg-gray-800">
+                <DropdownMenuContent className="bg-background border-border">
+                  <DropdownMenuItem className="text-foreground hover:bg-accent">
                     <Bookmark className="w-4 h-4 mr-2" />
                     Save to playlist
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  <DropdownMenuItem className="text-foreground hover:bg-accent">
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  <DropdownMenuItem className="text-foreground hover:bg-accent">
                     <Flag className="w-4 h-4 mr-2" />
                     Report
                   </DropdownMenuItem>
@@ -427,15 +447,19 @@ export default function EnhancedVideoCard({
           </div>
 
           {showComments && (
-            <div className="border-t border-gray-700 pt-4 mt-4">
+            <div className="border-t border-border pt-4 mt-4">
               <div className="flex space-x-2 mb-4">
                 <Input
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="bg-gray-800 border-gray-600 text-white rounded-xl"
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
-                <Button onClick={handleComment} size="sm" className="bg-white text-black hover:bg-gray-200 rounded-xl">
+                <Button
+                  onClick={handleComment}
+                  size="sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl"
+                >
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
@@ -450,10 +474,10 @@ export default function EnhancedVideoCard({
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-white text-sm">@{comment.user_name}</span>
-                        <span className="text-gray-500 text-xs">{formatTimeAgo(comment.created_at)}</span>
+                        <span className="font-medium text-foreground text-sm">@{comment.user_name}</span>
+                        <span className="text-muted-foreground text-xs">{formatTimeAgo(comment.created_at)}</span>
                       </div>
-                      <p className="text-gray-300 text-sm">{comment.content}</p>
+                      <p className="text-muted-foreground text-sm">{comment.content}</p>
                     </div>
                   </div>
                 ))}

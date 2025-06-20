@@ -52,7 +52,7 @@ export default function EnhancedVideoFeed() {
   const fetchVideos = async () => {
     try {
       const { data, error } = await supabase
-        .from("video")
+        .from("videos")
         .select("*")
         .eq("is_public", true)
         .order("uploaded_at", { ascending: false })

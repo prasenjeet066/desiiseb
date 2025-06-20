@@ -44,8 +44,8 @@ function SearchComponent() {
     <form onSubmit={handleSearch} className="relative group">
       <div
         className={`relative flex items-center transition-all duration-300 ${
-          isSearchFocused ? "ring-2 ring-white/20 scale-[1.02]" : ""
-        } rounded-full bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 hover:border-gray-600`}
+          isSearchFocused ? "ring-2 ring-primary/20 scale-[1.02]" : ""
+        } rounded-full bg-muted/80 backdrop-blur-sm border border-border hover:border-border/60`}
       >
         <Input
           type="text"
@@ -54,7 +54,7 @@ function SearchComponent() {
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
-          className="flex-1 bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 rounded-l-full pl-4 pr-10 h-11"
+          className="flex-1 bg-transparent border-0 text-foreground placeholder-muted-foreground focus:ring-0 rounded-l-full pl-4 pr-10 h-11"
         />
 
         {searchQuery && (
@@ -63,7 +63,7 @@ function SearchComponent() {
             variant="ghost"
             size="sm"
             onClick={clearSearch}
-            className="absolute right-12 text-gray-400 hover:text-white p-1 h-auto"
+            className="absolute right-12 text-muted-foreground hover:text-foreground p-1 h-auto"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -73,7 +73,7 @@ function SearchComponent() {
           type="submit"
           variant="ghost"
           size="sm"
-          className="rounded-r-full px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-800"
+          className="rounded-r-full px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent"
         >
           <Search className="w-4 h-4" />
         </Button>
@@ -120,46 +120,49 @@ function UserAvatar() {
         <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
           <Avatar className="h-9 w-9">
             <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={displayName} />
-            <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
               {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-gray-900 border-gray-700" align="end" forceMount>
+      <DropdownMenuContent className="w-56 bg-background border-border" align="end" forceMount>
         <div className="flex items-center justify-start gap-2 p-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={displayName} />
-            <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-sm">
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm">
               {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium text-white">{displayName}</p>
-            <p className="text-xs text-gray-400">{user.email}</p>
+            <p className="text-sm font-medium text-foreground">{displayName}</p>
+            <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
         </div>
-        <DropdownMenuSeparator className="bg-gray-700" />
-        <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+        <DropdownMenuSeparator className="bg-border" />
+        <DropdownMenuItem asChild className="text-foreground hover:text-foreground hover:bg-accent">
           <Link href="/profile" className="flex items-center">
             <User className="mr-2 h-4 w-4" />
             Your Channel
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+        <DropdownMenuItem asChild className="text-foreground hover:text-foreground hover:bg-accent">
           <Link href="/studio" className="flex items-center">
             <BarChart3 className="mr-2 h-4 w-4" />
             Creator Studio
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+        <DropdownMenuItem asChild className="text-foreground hover:text-foreground hover:bg-accent">
           <Link href="/settings" className="flex items-center">
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-gray-700" />
-        <DropdownMenuItem onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+        <DropdownMenuSeparator className="bg-border" />
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Sign Out
         </DropdownMenuItem>
@@ -172,7 +175,7 @@ export default function Header({ onSidebarToggle, showSidebarToggle = true }: He
   const [notificationCount, setNotificationCount] = useState(3) // Mock notification count
 
   return (
-    <header className="border-b border-gray-800/50 bg-black/95 backdrop-blur-md sticky top-0 z-40 transition-all duration-300">
+    <header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-40 transition-all duration-300">
       <div className="container mx-auto px-4 py-3 flex items-center gap-4">
         {/* Sidebar Toggle & Logo */}
         <div className="flex items-center gap-3">
@@ -181,7 +184,7 @@ export default function Header({ onSidebarToggle, showSidebarToggle = true }: He
               variant="ghost"
               size="sm"
               onClick={onSidebarToggle}
-              className="text-gray-400 hover:text-white p-2 lg:hidden"
+              className="text-muted-foreground hover:text-foreground p-2 lg:hidden"
             >
               <Menu className="w-5 h-5" />
             </Button>
@@ -197,9 +200,7 @@ export default function Header({ onSidebarToggle, showSidebarToggle = true }: He
 
         {/* Search Bar */}
         <div className="flex-1 max-w-2xl mx-4">
-          <Suspense
-            fallback={<div className="h-11 bg-gray-900/80 rounded-full border border-gray-700/50 animate-pulse" />}
-          >
+          <Suspense fallback={<div className="h-11 bg-muted/80 rounded-full border border-border animate-pulse" />}>
             <SearchComponent />
           </Suspense>
         </div>
@@ -221,7 +222,7 @@ export default function Header({ onSidebarToggle, showSidebarToggle = true }: He
           <Button variant="ghost" size="sm" className="nav-link relative">
             <Bell className="w-5 h-5" />
             {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {notificationCount > 9 ? "9+" : notificationCount}
               </span>
             )}

@@ -1,560 +1,504 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
+import type { User } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LoadingSpinner, CardLoadingSpinner } from "@/components/ui/loading-spinner"
+import ModernVideoCard from "./modern-video-card"
 import {
-  Settings,
-  MoreHorizontal,
+  Users,
+  Eye,
+  Heart,
+  Video,
   Calendar,
   MapPin,
   LinkIcon,
-  Users,
-  Video,
-  Eye,
-  Heart,
-  Play,
-  Grid3X3,
+  Settings,
+  Share2,
+  Grid,
   List,
-  AlertCircle,
-  RefreshCw,
+  Edit,
+  MoreHorizontal,
 } from "lucide-react"
+import ProfileSkeleton from "./skeletons/profile-skeleton"
 import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
+import { useRouter } from "next/navigation"
 
-interface Profile {
-  id: string
-  username: string
-  full_name: string
-  avatar_url: string | null
-  cover_photo_url: string | null
-  bio: string | null
-  website: string | null
-  location: string | null
-  created_at: string
+interface EnhancedUserProfileProps {
+  user: User
 }
 
-interface VideoType {
-  id: string
-  title: string
-  description: string | null
-  thumbnail_url: string | null
-  video_url: string
-  views: number
-  likes: number
-  uploaded_at: string
-  is_public: boolean
-  category: string | null
-}
-
-interface UserStats {
-  totalVideos: number
-  totalViews: number
-  totalLikes: number
-  joinDate: string
-}
-
-export default function EnhancedUserProfile() {
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [videos, setVideos] = useState<VideoType[]>([])
-  const [stats, setStats] = useState<UserStats | null>(null)
+export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) {
+  const router = useRouter()
+  const [videos, setVideos] = useState<any[]>([])
+  const [likedVideos, setLikedVideos] = useState<any[]>([])
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [videosLoading, setVideosLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [videosError, setVideosError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("videos")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-
+  const [layout, setLayout] = useState<"grid" | "list">("grid")
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
-    fetchProfile()
-    fetchVideos()
-  }, [])
+    fetchUserProfile()
+    fetchUserVideos()
+    fetchLikedVideos()
+  }, [user.id])
 
-  const fetchProfile = async () => {
+  const fetchUserProfile = async () => {
     try {
-      setLoading(true)
       setError(null)
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        setError("Please log in to view your profile")
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching profile:", error)
+        setError("Failed to load profile")
         return
       }
 
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single()
-
-      if (profileError && profileError.code !== "PGRST116") {
-        throw profileError
-      }
-
-      // If no profile exists, create one from user metadata
-      let finalProfile = profileData
-      if (!profileData) {
-        const newProfile = {
+      setProfile(
+        data || {
           id: user.id,
-          username: user.user_metadata?.username || user.email?.split("@")[0] || "user",
-          full_name: user.user_metadata?.full_name || user.email || "Anonymous User",
-          avatar_url: user.user_metadata?.avatar_url || null,
-          cover_photo_url: null,
-          bio: null,
-          website: null,
-          location: null,
+          display_name: user.user_metadata?.full_name || "",
+          channel_name: user.user_metadata?.username || user.email?.split("@")[0] || "",
+          avatar_url: user.user_metadata?.avatar_url || "",
           created_at: user.created_at,
-        }
-
-        const { data: insertedProfile, error: insertError } = await supabase
-          .from("profiles")
-          .insert([newProfile])
-          .select()
-          .single()
-
-        if (insertError) throw insertError
-        finalProfile = insertedProfile
-      }
-
-      setProfile(finalProfile)
-
-      // Calculate stats
-      const { data: videoStats } = await supabase
-        .from("video")
-        .select("views, likes, uploaded_at")
-        .eq("channel_id", user.id)
-        .eq("is_public", true)
-
-      const totalVideos = videoStats?.length || 0
-      const totalViews = videoStats?.reduce((sum, video) => sum + (video.views || 0), 0) || 0
-      const totalLikes = videoStats?.reduce((sum, video) => sum + (video.likes || 0), 0) || 0
-
-      setStats({
-        totalVideos,
-        totalViews,
-        totalLikes,
-        joinDate: finalProfile.created_at,
-      })
-    } catch (err) {
-      console.error("Error fetching profile:", err)
-      setError("Failed to load profile. Please try again.")
+        },
+      )
+    } catch (error) {
+      console.error("Error fetching user profile:", error)
+      setError("Failed to load profile")
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchVideos = async () => {
+  const fetchUserVideos = async () => {
     try {
       setVideosLoading(true)
-      setVideosError(null)
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data: videosData, error: videosError } = await supabase
-        .from("video")
+      const { data, error } = await supabase
+        .from("videos")
         .select("*")
         .eq("channel_id", user.id)
-        .eq("is_public", true)
         .order("uploaded_at", { ascending: false })
 
-      if (videosError) throw videosError
+      if (error) {
+        console.error("Error fetching videos:", error)
+        setVideos([])
+        return
+      }
 
-      setVideos(videosData || [])
-    } catch (err) {
-      console.error("Error fetching videos:", err)
-      setVideosError("Failed to load videos. Please try again.")
+      setVideos(data || [])
+    } catch (error) {
+      console.error("Error fetching user videos:", error)
+      setVideos([])
     } finally {
       setVideosLoading(false)
     }
   }
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
+  const fetchLikedVideos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("videos")
+        .select("*")
+        .contains("liked_by", [user.id])
+        .order("uploaded_at", { ascending: false })
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
+      if (error) {
+        console.error("Error fetching liked videos:", error)
+        return
+      }
 
-  const formatWebsiteUrl = (url: string | null) => {
-    if (!url) return null
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url
+      setLikedVideos(data || [])
+    } catch (error) {
+      console.error("Error fetching liked videos:", error)
+      setLikedVideos([])
     }
-    return `https://${url}`
   }
+
+  const handleFollow = async () => {
+    setIsFollowing(!isFollowing)
+    // TODO: Implement actual follow/unfollow logic
+  }
+
+  const formatNumber = (num: number) => {
+    if (num < 1000) return num.toString()
+    if (num < 1000000) return `${(num / 1000).toFixed(1)}K`
+    return `${(num / 1000000).toFixed(1)}M`
+  }
+
+  const totalLikes = videos.reduce((acc, video) => acc + (video.likes || 0), 0)
+  const totalViews = videos.reduce((acc, video) => acc + (video.views || 0), 0)
 
   if (loading) {
-    return <LoadingSpinner size="xl" className="min-h-screen" />
+    return <ProfileSkeleton />
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-            <h3 className="text-lg font-semibold text-red-600">Error Loading Profile</h3>
-            <p className="text-gray-600">{error}</p>
-            <Button onClick={fetchProfile} className="w-full">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto" />
-            <h3 className="text-lg font-semibold">Profile Not Found</h3>
-            <p className="text-gray-600">Unable to load profile information.</p>
-            <Button onClick={fetchProfile} className="w-full">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="text-red-500 text-lg mb-2">Error loading profile</div>
+          <p className="text-gray-400 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Try Again
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-black text-white">
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Profile Header */}
-        <div className="relative">
-          {/* Cover Photo */}
-          <div className="h-48 md:h-64 rounded-xl overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-            {profile.cover_photo_url ? (
-              <img
-                src={profile.cover_photo_url || "/placeholder.svg"}
-                alt="Cover"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600" />
-            )}
-          </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Profile Header */}
+      <div className="relative">
+        {/* Cover Image */}
+        <div className="h-48 md:h-64 bg-gray-800 rounded-lg overflow-hidden relative">
+          {profile?.cover_photo_url && (
+            <img
+              src={profile.cover_photo_url || "/placeholder.svg"}
+              alt="Cover"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none"
+              }}
+            />
+          )}
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
 
-          {/* Profile Info */}
-          <div className="relative -mt-16 px-6">
-            <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
-              <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-black">
-                <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500">
-                  {getInitials(profile.full_name)}
+        {/* Profile Info */}
+        <div className="relative -mt-16 px-4 md:px-6">
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
+            <div className="relative">
+              <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-black bg-gray-800">
+                <AvatarImage src={profile?.avatar_url || "/placeholder.svg?height=120&width=120"} alt="Profile" />
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl md:text-4xl">
+                  {(profile?.display_name || profile?.channel_name || user.email)?.charAt(0)?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-2">
-                    <h1 className="text-2xl md:text-3xl font-bold truncate">{profile.full_name}</h1>
-                    <p className="text-gray-400">@{profile.username}</p>
-                    {profile.bio && <p className="text-gray-300 max-w-2xl">{profile.bio}</p>}
-                  </div>
+              {profile?.is_verified && (
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 md:w-8 md:h-8 bg-blue-500 rounded-full flex items-center justify-center border-2 border-black">
+                  <svg className="w-3 h-3 md:w-5 md:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
 
-                  <div className="flex items-center gap-3">
-                    <Button asChild>
-                      <Link href="/profile/edit">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Edit Profile
-                      </Link>
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Share Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Copy Link</DropdownMenuItem>
-                        <DropdownMenuItem>Report</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2 truncate">
+                    {profile?.display_name || profile?.channel_name || "User"}
+                    {profile?.is_verified && <Badge className="bg-blue-500 shrink-0">Verified</Badge>}
+                  </h1>
+                  <p className="text-gray-400 text-lg truncate">
+                    @{profile?.channel_name || user.email?.split("@")[0] || "username"}
+                  </p>
+                  {profile?.channel_description && (
+                    <p className="text-gray-300 mt-2 max-w-2xl line-clamp-2">{profile.channel_description}</p>
+                  )}
                 </div>
 
-                {/* Profile Stats */}
-                {stats && (
-                  <div className="flex flex-wrap gap-6 mt-4">
-                    <div className="flex items-center gap-2">
-                      <Video className="w-4 h-4 text-blue-400" />
-                      <span className="text-sm">
-                        <strong>{formatNumber(stats.totalVideos)}</strong> videos
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-green-400" />
-                      <span className="text-sm">
-                        <strong>{formatNumber(stats.totalViews)}</strong> views
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Heart className="w-4 h-4 text-red-400" />
-                      <span className="text-sm">
-                        <strong>{formatNumber(stats.totalLikes)}</strong> likes
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-purple-400" />
-                      <span className="text-sm">
-                        <strong>0</strong> subscribers
-                      </span>
-                    </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Link href="/profile/edit">
+                    <Button className="bg-none text-gray-100">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                  </Link>
+                  <Link href="/studio">
+                    <Button className="bg-yellow-400 text-gray-800">
+                      
+                      Go Studio
+                    </Button>
+                  </Link>
+                  
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="border-gray-600 text-white">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem className="text-white hover:bg-gray-700">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-white hover:bg-gray-700">
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share Profile
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              {/* Profile Stats */}
+              <div className="flex flex-wrap gap-4 md:gap-6 mt-4">
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Video className="w-4 h-4" />
+                  <span className="font-semibold">{formatNumber(videos.length)}</span>
+                  <span className="hidden sm:inline">videos</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Users className="w-4 h-4" />
+                  <span className="font-semibold">{formatNumber(profile?.subscribers || 0)}</span>
+                  <span className="hidden sm:inline">subscribers</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Eye className="w-4 h-4" />
+                  <span className="font-semibold">{formatNumber(totalViews)}</span>
+                  <span className="hidden sm:inline">views</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Heart className="w-4 h-4" />
+                  <span className="font-semibold">{formatNumber(totalLikes)}</span>
+                  <span className="hidden sm:inline">likes</span>
+                </div>
+              </div>
+
+              {/* Additional Info */}
+              <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
+                {profile?.location && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{profile.location}</span>
                   </div>
                 )}
-
-                {/* Additional Info */}
-                <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
-                  {profile.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      <span>{profile.location}</span>
-                    </div>
-                  )}
-                  {profile.website && (
-                    <div className="flex items-center gap-1">
-                      <LinkIcon className="w-3 h-3" />
-                      <a
-                        href={formatWebsiteUrl(profile.website)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-blue-400 transition-colors"
-                      >
-                        {profile.website}
-                      </a>
-                    </div>
-                  )}
-                  {stats && (
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>Joined {formatDistanceToNow(new Date(stats.joinDate), { addSuffix: true })}</span>
-                    </div>
-                  )}
+                {profile?.website && (
+                  <div className="flex items-center gap-1">
+                    <LinkIcon className="w-4 h-4" />
+                    <a
+                      href={profile.website.startsWith("http") ? profile.website : `https://${profile.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-white truncate max-w-[200px]"
+                    >
+                      {profile.website}
+                    </a>
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>Joined {new Date(profile?.created_at || user.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Content Tabs */}
-        <div className="px-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-between mb-6">
-              <TabsList className="grid w-full max-w-md grid-cols-4">
-                <TabsTrigger value="videos">Videos</TabsTrigger>
-                <TabsTrigger value="playlists">Playlists</TabsTrigger>
-                <TabsTrigger value="posts">Posts</TabsTrigger>
-                <TabsTrigger value="about">About</TabsTrigger>
-              </TabsList>
+      {/* Content Tabs */}
+      <div className="px-4 md:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+            <TabsList className="bg-gray-800 border-gray-700 w-full sm:w-auto">
+              <TabsTrigger
+                value="videos"
+                className="data-[state=active]:bg-white data-[state=active]:text-black flex-1 sm:flex-none"
+              >
+                Videos ({videos.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="liked"
+                className="data-[state=active]:bg-white data-[state=active]:text-black flex-1 sm:flex-none"
+              >
+                Liked ({likedVideos.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="playlists"
+                className="data-[state=active]:bg-white data-[state=active]:text-black flex-1 sm:flex-none"
+              >
+                Playlists
+              </TabsTrigger>
+              <TabsTrigger
+                value="about"
+                className="data-[state=active]:bg-white data-[state=active]:text-black flex-1 sm:flex-none"
+              >
+                About
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-              {activeTab === "videos" && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                  >
-                    <Grid3X3 className="w-4 h-4" />
+          <div className="flex items-center bg-gray-800 rounded-lg p-1">
+            <Button
+              variant={layout === "grid" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setLayout("grid")}
+              className="p-2"
+            >
+              <Grid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={layout === "list" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setLayout("list")}
+              className="p-2"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        <Tabs value={activeTab}>
+          <TabsContent value="videos">
+            {videosLoading ? (
+              <div className="text-center text-gray-400 py-8">Loading videos...</div>
+            ) : videos.length === 0 ? (
+              <div className="text-center py-12">
+                <Video className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No videos uploaded yet</h3>
+                <p className="text-gray-400 mb-4">Start creating content to build your channel!</p>
+                <Link href="/upload">
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    Upload Your First Video
                   </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                  >
-                    <List className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
+                </Link>
+              </div>
+            ) : (
+              <div
+                className={
+                  layout === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+                    : "space-y-4"
+                }
+              >
+                {videos.map((video) => (
+                  <ModernVideoCard key={video.id} video={video} onUpdate={fetchUserVideos} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="liked">
+            {likedVideos.length === 0 ? (
+              <div className="text-center py-12">
+                <Heart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No liked videos yet</h3>
+                <p className="text-gray-400">Videos you like will appear here</p>
+              </div>
+            ) : (
+              <div
+                className={
+                  layout === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+                    : "space-y-4"
+                }
+              >
+                {likedVideos.map((video) => (
+                  <ModernVideoCard key={video.id} video={video} onUpdate={fetchLikedVideos} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="playlists">
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Video className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">No playlists yet</h3>
+              <p className="text-gray-400 mb-4">Create playlists to organize your videos</p>
+              <Button variant="outline" className="border-gray-600 text-gray-300">
+                Create Playlist
+              </Button>
             </div>
+          </TabsContent>
 
-            <TabsContent value="videos" className="space-y-6">
-              {videosLoading ? (
-                <CardLoadingSpinner />
-              ) : videosError ? (
-                <Card>
-                  <CardContent className="p-6 text-center space-y-4">
-                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-                    <h3 className="text-lg font-semibold text-red-600">Error Loading Videos</h3>
-                    <p className="text-gray-400">{videosError}</p>
-                    <Button onClick={fetchVideos}>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Try Again
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : videos.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center space-y-4">
-                    <Video className="w-16 h-16 text-gray-500 mx-auto" />
-                    <h3 className="text-xl font-semibold">No videos yet</h3>
-                    <p className="text-gray-400 max-w-md mx-auto">
-                      Start creating content to build your channel. Upload your first video to get started!
-                    </p>
-                    <Button asChild>
-                      <Link href="/upload">
-                        <Play className="w-4 h-4 mr-2" />
-                        Upload Video
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div
-                  className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                      : "space-y-4"
-                  }
-                >
-                  {videos.map((video) => (
-                    <Card key={video.id} className="group hover:shadow-lg transition-all duration-200">
-                      <Link href={`/watch/${video.id}`}>
-                        <div className={viewMode === "grid" ? "space-y-3" : "flex gap-4 p-4"}>
-                          <div className={viewMode === "grid" ? "aspect-video" : "w-40 aspect-video flex-shrink-0"}>
-                            <img
-                              src={video.thumbnail_url || "/placeholder.svg?height=180&width=320"}
-                              alt={video.title}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                          </div>
-                          <div className={viewMode === "grid" ? "p-4 space-y-2" : "flex-1 space-y-2"}>
-                            <h3 className="font-semibold line-clamp-2 group-hover:text-blue-400 transition-colors">
-                              {video.title}
-                            </h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-400">
-                              <span>{formatNumber(video.views)} views</span>
-                              <span>{formatDistanceToNow(new Date(video.uploaded_at), { addSuffix: true })}</span>
-                            </div>
-                            {video.category && (
-                              <Badge variant="secondary" className="text-xs">
-                                {video.category}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </Link>
-                    </Card>
-                  ))}
+          <TabsContent value="about">
+            <div className="max-w-4xl space-y-6">
+              <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
+                <h3 className="text-xl font-semibold text-white mb-4">Channel Statistics</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{formatNumber(videos.length)}</div>
+                    <div className="text-gray-400">Total Videos</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{formatNumber(totalViews)}</div>
+                    <div className="text-gray-400">Total Views</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{formatNumber(totalLikes)}</div>
+                    <div className="text-gray-400">Total Likes</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{formatNumber(profile?.subscribers || 0)}</div>
+                    <div className="text-gray-400">Subscribers</div>
+                  </div>
+                </div>
+              </div>
+
+              {(profile?.channel_description || profile?.bio) && (
+                <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
+                  <h3 className="text-xl font-semibold text-white mb-4">About</h3>
+                  <div className="space-y-3">
+                    {profile?.channel_description && (
+                      <div>
+                        <h4 className="text-gray-400 text-sm mb-1">Channel Description</h4>
+                        <p className="text-gray-300 leading-relaxed">{profile.channel_description}</p>
+                      </div>
+                    )}
+                    {profile?.bio && (
+                      <div>
+                        <h4 className="text-gray-400 text-sm mb-1">Bio</h4>
+                        <p className="text-gray-300 leading-relaxed">{profile.bio}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
-            </TabsContent>
 
-            <TabsContent value="playlists">
-              <Card>
-                <CardContent className="p-12 text-center space-y-4">
-                  <List className="w-16 h-16 text-gray-500 mx-auto" />
-                  <h3 className="text-xl font-semibold">No playlists yet</h3>
-                  <p className="text-gray-400">Create playlists to organize your videos</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="posts">
-              <Card>
-                <CardContent className="p-12 text-center space-y-4">
-                  <Heart className="w-16 h-16 text-gray-500 mx-auto" />
-                  <h3 className="text-xl font-semibold">No posts yet</h3>
-                  <p className="text-gray-400">Share updates with your audience</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="about">
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">About</h3>
-                    <p className="text-gray-300">{profile.bio || "No bio available."}</p>
+              <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
+                <h3 className="text-xl font-semibold text-white mb-4">Details</h3>
+                <div className="space-y-3 text-gray-300">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Email:</span>
+                    <span className="truncate ml-2">{user.email}</span>
                   </div>
-
-                  {stats && (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3">Stats</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-4 bg-gray-800 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-400">{formatNumber(stats.totalVideos)}</div>
-                          <div className="text-sm text-gray-400">Videos</div>
-                        </div>
-                        <div className="text-center p-4 bg-gray-800 rounded-lg">
-                          <div className="text-2xl font-bold text-green-400">{formatNumber(stats.totalViews)}</div>
-                          <div className="text-sm text-gray-400">Views</div>
-                        </div>
-                        <div className="text-center p-4 bg-gray-800 rounded-lg">
-                          <div className="text-2xl font-bold text-red-400">{formatNumber(stats.totalLikes)}</div>
-                          <div className="text-sm text-gray-400">Likes</div>
-                        </div>
-                        <div className="text-center p-4 bg-gray-800 rounded-lg">
-                          <div className="text-2xl font-bold text-purple-400">0</div>
-                          <div className="text-sm text-gray-400">Subscribers</div>
-                        </div>
-                      </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Joined:</span>{" "}
+                    <span>{new Date(profile?.created_at || user.created_at).toLocaleDateString()}</span>
+                  </div>
+                  {profile?.location && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Location:</span>
+                      <span className="truncate ml-2">{profile.location}</span>
                     </div>
                   )}
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Details</h3>
-                    <div className="space-y-2 text-sm">
-                      {profile.location && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          <span>{profile.location}</span>
-                        </div>
-                      )}
-                      {profile.website && (
-                        <div className="flex items-center gap-2">
-                          <LinkIcon className="w-4 h-4 text-gray-400" />
-                          <a
-                            href={formatWebsiteUrl(profile.website)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:underline"
-                          >
-                            {profile.website}
-                          </a>
-                        </div>
-                      )}
-                      {stats && (
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span>Joined {formatDistanceToNow(new Date(stats.joinDate), { addSuffix: true })}</span>
-                        </div>
-                      )}
+                  {profile?.website && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Website:</span>{" "}
+                      <a
+                        href={profile.website.startsWith("http") ? profile.website : `https://${profile.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 truncate ml-2"
+                      >
+                        {profile.website}
+                      </a>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

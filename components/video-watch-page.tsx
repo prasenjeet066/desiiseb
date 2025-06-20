@@ -3,329 +3,290 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/utils/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LoadingSpinner, CardLoadingSpinner } from "@/components/ui/loading-spinner"
-import {
-  ThumbsUp,
-  ThumbsDown,
-  Share,
-  Download,
-  MoreHorizontal,
-  Bell,
-  Eye,
-  Calendar,
-  AlertCircle,
-  RefreshCw,
-  Play,
-} from "lucide-react"
-import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
-
-interface Video {
-  id: string
-  title: string
-  description: string | null
-  thumbnail_url: string | null
-  video_url: string
-  views: number
-  likes: number
-  uploaded_at: string
-  category: string | null
-  user_id: string
-  profiles: {
-    username: string
-    full_name: string
-    avatar_url: string | null
-    bio: string | null
-  }
-}
-
-interface RelatedVideo {
-  id: string
-  title: string
-  thumbnail_url: string | null
-  views: number
-  uploaded_at: string
-  profiles: {
-    full_name: string
-    avatar_url: string | null
-  }
-}
+import VideoPlayer from "./video-player"
+import { Heart, Share2, Download, ThumbsDown, Bell, MoreVertical } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface VideoWatchPageProps {
-  videoId: string
+  video: {
+    id: string
+    title: string
+    description: string
+    video_url: string
+    thumbnail_url: string
+    uploaded_at: string
+    channel_id: string
+    channel_name: string
+    channel_avatar: string
+    views: number
+    likes: number
+    dislikes: number
+    liked_by: string[]
+    disliked_by: string[]
+    category?: string
+    tags?: string[]
+  }
 }
 
-export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
-  const [video, setVideo] = useState<Video | null>(null)
-  const [relatedVideos, setRelatedVideos] = useState<RelatedVideo[]>([])
-  const [loading, setLoading] = useState(true)
-  const [relatedLoading, setRelatedLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export default function VideoWatchPage({ video }: VideoWatchPageProps) {
   const [liked, setLiked] = useState(false)
+  const [disliked, setDisliked] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
-
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [relatedVideos, setRelatedVideos] = useState<any[]>([])
   const supabase = createClient()
 
   useEffect(() => {
-    if (videoId) {
-      fetchVideo()
-      fetchRelatedVideos()
+    getCurrentUser()
+    fetchRelatedVideos()
+  }, [])
+
+  useEffect(() => {
+    if (currentUser) {
+      setLiked(video.liked_by?.includes(currentUser.id) || false)
+      setDisliked(video.disliked_by?.includes(currentUser.id) || false)
     }
-  }, [videoId])
+  }, [currentUser, video])
 
-  const fetchVideo = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const { data, error } = await supabase
-        .from("video")
-        .select(`
-          *,
-          profiles!video_channel_id_fkey (
-            username,
-            full_name,
-            avatar_url,
-            bio
-          )
-        `)
-        .eq("id", videoId)
-        .single()
-
-      if (error) throw error
-
-      setVideo(data)
-
-      // Increment view count
-      await supabase
-        .from("video")
-        .update({ views: (data.views || 0) + 1 })
-        .eq("id", videoId)
-    } catch (err) {
-      console.error("Error fetching video:", err)
-      setError("Failed to load video. Please try again.")
-    } finally {
-      setLoading(false)
-    }
+  const getCurrentUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    setCurrentUser(user)
   }
 
   const fetchRelatedVideos = async () => {
     try {
-      setRelatedLoading(true)
-
       const { data, error } = await supabase
-        .from("video")
-        .select(`
-          id,
-          title,
-          thumbnail_url,
-          views,
-          uploaded_at,
-          profiles!video_channel_id_fkey (
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq("is_public", true)
-        .neq("id", videoId)
-        .order("uploaded_at", { ascending: false })
+        .from("videos")
+        .select("*")
+        .eq("visibility", "public")
+        .neq("id", video.id)
         .limit(10)
+        .order("views", { ascending: false })
 
       if (error) throw error
-
       setRelatedVideos(data || [])
-    } catch (err) {
-      console.error("Error fetching related videos:", err)
-    } finally {
-      setRelatedLoading(false)
+    } catch (error) {
+      console.error("Error fetching related videos:", error)
     }
   }
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
+  const handleLike = async () => {
+    if (!currentUser) return
+
+    try {
+      const newLikedBy = liked
+        ? video.liked_by?.filter((id) => id !== currentUser.id) || []
+        : [...(video.liked_by || []), currentUser.id]
+
+      const newDislikedBy = video.disliked_by?.filter((id) => id !== currentUser.id) || []
+
+      await supabase
+        .from("videos")
+        .update({
+          liked_by: newLikedBy,
+          disliked_by: newDislikedBy,
+          likes: newLikedBy.length,
+          dislikes: newDislikedBy.length,
+        })
+        .eq("id", video.id)
+
+      setLiked(!liked)
+      setDisliked(false)
+    } catch (error) {
+      console.error("Error handling like:", error)
+    }
   }
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
+  const handleDislike = async () => {
+    if (!currentUser) return
+
+    try {
+      const newDislikedBy = disliked
+        ? video.disliked_by?.filter((id) => id !== currentUser.id) || []
+        : [...(video.disliked_by || []), currentUser.id]
+
+      const newLikedBy = video.liked_by?.filter((id) => id !== currentUser.id) || []
+
+      await supabase
+        .from("videos")
+        .update({
+          liked_by: newLikedBy,
+          disliked_by: newDislikedBy,
+          likes: newLikedBy.length,
+          dislikes: newDislikedBy.length,
+        })
+        .eq("id", video.id)
+
+      setDisliked(!disliked)
+      setLiked(false)
+    } catch (error) {
+      console.error("Error handling dislike:", error)
+    }
   }
 
-  if (loading) {
-    return <LoadingSpinner size="xl" className="min-h-screen" />
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/watch/${video.id}`
+    if (navigator.share) {
+      await navigator.share({
+        title: video.title,
+        text: video.description,
+        url: shareUrl,
+      })
+    } else {
+      navigator.clipboard.writeText(shareUrl)
+    }
   }
 
-  if (error || !video) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-            <h3 className="text-lg font-semibold text-red-600">Error Loading Video</h3>
-            <p className="text-gray-600">{error || "Video not found"}</p>
-            <Button onClick={fetchVideo} className="w-full">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+    if (diffInSeconds < 60) return "Just now"
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
+    return `${Math.floor(diffInSeconds / 2592000)}mo ago`
+  }
+
+  const formatViews = (views: number) => {
+    if (views < 1000) return views.toString()
+    if (views < 1000000) return `${(views / 1000).toFixed(1)}K`
+    return `${(views / 1000000).toFixed(1)}M`
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-6">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      {/* Main Video Section */}
+      <div className="xl:col-span-8 space-y-6">
         {/* Video Player */}
-        <div className="aspect-video rounded-xl overflow-hidden bg-gray-900 mb-6">
-          <video
+        <div className="aspect-video bg-black rounded-2xl overflow-hidden">
+          <VideoPlayer
             src={video.video_url}
-            poster={video.thumbnail_url || undefined}
-            controls
+            poster={video.thumbnail_url}
+            title={video.title}
             className="w-full h-full"
-            autoPlay
           />
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Side - Video Info */}
-          <div className="lg:col-span-8 space-y-4">
-            {/* Video Title */}
-            <div className="space-y-2">
-              <h1 className="text-xl md:text-2xl font-bold">{video.title}</h1>
-              {video.category && <Badge variant="secondary">{video.category}</Badge>}
-            </div>
-
-            {/* Stats and Actions */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center space-x-4 text-sm text-gray-400">
-                <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  <span>{formatNumber(video.views)} views</span>
+        {/* Video Info */}
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-2">{video.title}</h1>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={video.channel_avatar || "/placeholder.svg"}
+                  alt={video.channel_name}
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <h3 className="font-semibold text-white">{video.channel_name}</h3>
+                  <p className="text-gray-400 text-sm">
+                    {formatViews(video.views)} views • {formatTimeAgo(video.uploaded_at)}
+                  </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>{formatDistanceToNow(new Date(video.uploaded_at), { addSuffix: true })}</span>
-                </div>
+                <Button
+                  variant={subscribed ? "secondary" : "default"}
+                  onClick={() => setSubscribed(!subscribed)}
+                  className="ml-4"
+                >
+                  <Bell className="w-4 h-4 mr-2" />
+                  {subscribed ? "Subscribed" : "Subscribe"}
+                </Button>
               </div>
+
               <div className="flex items-center gap-2">
                 <Button
-                  variant={liked ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setLiked(!liked)}
-                  className="bg-black text-white border-gray-600"
+                  variant="secondary"
+                  onClick={handleLike}
+                  className={`${liked ? "bg-red-600 hover:bg-red-700" : ""}`}
                 >
-                  <ThumbsUp className="w-4 h-4 mr-2" />
-                  {formatNumber(video.likes + (liked ? 1 : 0))}
+                  <Heart className={`w-4 h-4 mr-2 ${liked ? "fill-current" : ""}`} />
+                  {video.likes}
                 </Button>
-                <Button variant="outline" size="sm" className="bg-black text-white border-gray-600">
-                  <ThumbsDown className="w-4 h-4" />
+
+                <Button variant="secondary" onClick={handleDislike}>
+                  <ThumbsDown className={`w-4 h-4 ${disliked ? "fill-current" : ""}`} />
                 </Button>
-                <Button variant="outline" size="sm" className="bg-black text-white border-gray-600">
-                  <Share className="w-4 h-4 mr-2" />
+
+                <Button variant="secondary" onClick={handleShare}>
+                  <Share2 className="w-4 h-4 mr-2" />
                   Share
                 </Button>
-                <Button variant="outline" size="sm" className="bg-black text-white border-gray-600">
+
+                <Button variant="secondary">
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </Button>
-                <Button variant="outline" size="icon" className="bg-black text-white border-gray-600">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="secondary" size="sm">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-gray-900 border-gray-700">
+                    <DropdownMenuItem className="text-white hover:bg-gray-800">Save to playlist</DropdownMenuItem>
+                    <DropdownMenuItem className="text-white hover:bg-gray-800">Report</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
-
-            {/* Channel Info */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={video.profiles?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500">
-                    {getInitials(video.profiles?.full_name || "User")}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <Link href={`/profile/${video.profiles?.username}`}>
-                    <h3 className="font-semibold hover:text-blue-400 transition-colors">{video.profiles?.full_name}</h3>
-                  </Link>
-                  <p className="text-sm text-gray-400">0 subscribers</p>
-                </div>
-              </div>
-              <Button
-                variant={subscribed ? "outline" : "default"}
-                onClick={() => setSubscribed(!subscribed)}
-                className={subscribed ? "bg-black text-white border-gray-600" : ""}
-              >
-                <Bell className="w-4 h-4 mr-2" />
-                {subscribed ? "Subscribed" : "Subscribe"}
-              </Button>
-            </div>
-
-            {/* Description */}
-            {video.description && (
-              <Card className="bg-gray-900 border-gray-800">
-                <CardContent className="p-4">
-                  <p className="text-gray-300 whitespace-pre-wrap">{video.description}</p>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
-          {/* Right Side - Related Videos */}
-          <div className="lg:col-span-4 space-y-4">
-            <h2 className="text-lg font-semibold">Related Videos</h2>
-
-            {relatedLoading ? (
-              <CardLoadingSpinner />
-            ) : relatedVideos.length === 0 ? (
-              <Card className="bg-gray-900 border-gray-800">
-                <CardContent className="p-6 text-center space-y-4">
-                  <Play className="w-12 h-12 text-gray-500 mx-auto" />
-                  <p className="text-gray-400">No related videos found</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {relatedVideos.map((relatedVideo) => (
-                  <Card
-                    key={relatedVideo.id}
-                    className="group hover:shadow-lg transition-all duration-200 bg-gray-900 border-gray-800"
-                  >
-                    <Link href={`/watch/${relatedVideo.id}`}>
-                      <div className="flex gap-3 p-3">
-                        <div className="w-40 aspect-video flex-shrink-0">
-                          <img
-                            src={relatedVideo.thumbnail_url || "/placeholder.svg?height=90&width=160"}
-                            alt={relatedVideo.title}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <h3 className="font-medium line-clamp-2 text-sm group-hover:text-blue-400 transition-colors">
-                            {relatedVideo.title}
-                          </h3>
-                          <p className="text-xs text-gray-400">{relatedVideo.profiles?.full_name}</p>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <span>{formatNumber(relatedVideo.views)} views</span>
-                            <span>•</span>
-                            <span>{formatDistanceToNow(new Date(relatedVideo.uploaded_at), { addSuffix: true })}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </Card>
+          {/* Description */}
+          <div className="bg-gray-900/50 rounded-xl p-4">
+            <p className="text-gray-300 whitespace-pre-wrap">{video.description}</p>
+            {video.category && (
+              <div className="mt-4">
+                <Badge variant="secondary" className="bg-gray-800 text-gray-300">
+                  {video.category}
+                </Badge>
+              </div>
+            )}
+            {video.tags && video.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {video.tags.map((tag, index) => (
+                  <Badge key={index} variant="outline" className="border-gray-600 text-gray-400">
+                    #{tag}
+                  </Badge>
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar - Related Videos */}
+      <div className="xl:col-span-4">
+        <div className="space-y-4">
+          <h3 className="text-xl font-bold text-white">Related Videos</h3>
+          <div className="space-y-4">
+            {relatedVideos.map((relatedVideo) => (
+              <div
+                key={relatedVideo.id}
+                className="flex gap-3 p-3 rounded-xl hover:bg-gray-900/50 transition-colors cursor-pointer"
+              >
+                <div className="w-40 h-24 flex-shrink-0">
+                  <img
+                    src={relatedVideo.thumbnail_url || "/placeholder.svg"}
+                    alt={relatedVideo.title}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-white text-sm line-clamp-2 mb-1">{relatedVideo.title}</h4>
+                  <p className="text-gray-400 text-xs mb-1">{relatedVideo.channel_name}</p>
+                  <p className="text-gray-500 text-xs">
+                    {formatViews(relatedVideo.views)} views • {formatTimeAgo(relatedVideo.uploaded_at)}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
