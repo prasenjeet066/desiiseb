@@ -48,8 +48,8 @@ interface VideoType {
   video_url: string
   views: number
   likes: number
-  created_at: string
-  visibility: string
+  uploaded_at: string
+  is_public: boolean
   category: string | null
 }
 
@@ -130,10 +130,10 @@ export default function EnhancedUserProfile() {
 
       // Calculate stats
       const { data: videoStats } = await supabase
-        .from("videos")
-        .select("views, likes, created_at")
-        .eq("user_id", user.id)
-        .eq("visibility", "public")
+        .from("video")
+        .select("views, likes, uploaded_at")
+        .eq("channel_id", user.id)
+        .eq("is_public", true)
 
       const totalVideos = videoStats?.length || 0
       const totalViews = videoStats?.reduce((sum, video) => sum + (video.views || 0), 0) || 0
@@ -164,11 +164,11 @@ export default function EnhancedUserProfile() {
       if (!user) return
 
       const { data: videosData, error: videosError } = await supabase
-        .from("videos")
+        .from("video")
         .select("*")
-        .eq("user_id", user.id)
-        .eq("visibility", "public")
-        .order("created_at", { ascending: false })
+        .eq("channel_id", user.id)
+        .eq("is_public", true)
+        .order("uploaded_at", { ascending: false })
 
       if (videosError) throw videosError
 
@@ -452,7 +452,7 @@ export default function EnhancedUserProfile() {
                             </h3>
                             <div className="flex items-center gap-4 text-sm text-gray-400">
                               <span>{formatNumber(video.views)} views</span>
-                              <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                              <span>{formatDistanceToNow(new Date(video.uploaded_at), { addSuffix: true })}</span>
                             </div>
                             {video.category && (
                               <Badge variant="secondary" className="text-xs">

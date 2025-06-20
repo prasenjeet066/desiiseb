@@ -34,7 +34,7 @@ export default function UserProfile({ user }: UserProfileProps) {
   const fetchUserVideos = async () => {
     try {
       const { data, error } = await supabase
-        .from("videos")
+        .from("video")
         .select("*")
         .eq("channel_id", user.id)
         .order("uploaded_at", { ascending: false })

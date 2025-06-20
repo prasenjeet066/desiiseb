@@ -19,9 +19,9 @@ interface Video {
   video_url: string
   views: number
   likes: number
-  created_at: string
+  uploaded_at: string
   category: string | null
-  user_id: string
+  channel_id: string
   profiles: {
     username: string
     full_name: string
@@ -46,17 +46,17 @@ export default function VideoFeed() {
       setError(null)
 
       const { data, error } = await supabase
-        .from("videos")
+        .from("video")
         .select(`
           *,
-          profiles (
+          profiles!video_channel_id_fkey (
             username,
             full_name,
             avatar_url
           )
         `)
-        .eq("visibility", "public")
-        .order("created_at", { ascending: false })
+        .eq("is_public", true)
+        .order("uploaded_at", { ascending: false })
         .limit(20)
 
       if (error) throw error
@@ -166,7 +166,7 @@ export default function VideoFeed() {
                         <span>{formatNumber(video.views)} views</span>
                       </div>
                       <span>•</span>
-                      <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                      <span>{formatDistanceToNow(new Date(video.uploaded_at), { addSuffix: true })}</span>
                     </div>
                   </div>
                 </div>

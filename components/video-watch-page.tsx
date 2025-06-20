@@ -31,7 +31,7 @@ interface Video {
   video_url: string
   views: number
   likes: number
-  created_at: string
+  uploaded_at: string
   category: string | null
   user_id: string
   profiles: {
@@ -47,7 +47,7 @@ interface RelatedVideo {
   title: string
   thumbnail_url: string | null
   views: number
-  created_at: string
+  uploaded_at: string
   profiles: {
     full_name: string
     avatar_url: string | null
@@ -82,10 +82,10 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
       setError(null)
 
       const { data, error } = await supabase
-        .from("videos")
+        .from("video")
         .select(`
           *,
-          profiles (
+          profiles!video_channel_id_fkey (
             username,
             full_name,
             avatar_url,
@@ -101,7 +101,7 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
 
       // Increment view count
       await supabase
-        .from("videos")
+        .from("video")
         .update({ views: (data.views || 0) + 1 })
         .eq("id", videoId)
     } catch (err) {
@@ -117,21 +117,21 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
       setRelatedLoading(true)
 
       const { data, error } = await supabase
-        .from("videos")
+        .from("video")
         .select(`
           id,
           title,
           thumbnail_url,
           views,
-          created_at,
-          profiles (
+          uploaded_at,
+          profiles!video_channel_id_fkey (
             full_name,
             avatar_url
           )
         `)
-        .eq("visibility", "public")
+        .eq("is_public", true)
         .neq("id", videoId)
-        .order("created_at", { ascending: false })
+        .order("uploaded_at", { ascending: false })
         .limit(10)
 
       if (error) throw error
@@ -214,7 +214,7 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                  <span>{formatDistanceToNow(new Date(video.uploaded_at), { addSuffix: true })}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export default function VideoWatchPage({ videoId }: VideoWatchPageProps) {
                           <div className="flex items-center gap-2 text-xs text-gray-500">
                             <span>{formatNumber(relatedVideo.views)} views</span>
                             <span>•</span>
-                            <span>{formatDistanceToNow(new Date(relatedVideo.created_at), { addSuffix: true })}</span>
+                            <span>{formatDistanceToNow(new Date(relatedVideo.uploaded_at), { addSuffix: true })}</span>
                           </div>
                         </div>
                       </div>
