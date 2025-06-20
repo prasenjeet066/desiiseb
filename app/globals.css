@@ -7,25 +7,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 3%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 98%;
     --radius: 0.75rem;
   }
 }
@@ -53,18 +53,23 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(210 40% 96%);
+  background: hsl(0 0% 8%);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(215.4 16.3% 46.9%);
+  background: hsl(0 0% 25%);
   border-radius: 3px;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(222.2 84% 4.9%);
+  background: hsl(0 0% 35%);
+}
+
+/* Remove shadows globally */
+* {
+  box-shadow: none !important;
 }
 
 /* Text utilities */
@@ -135,14 +140,14 @@
 
 /* Glass effect */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -151,12 +156,12 @@
 /* Logo gradient text with Vampiro One font */
 .logo-gradient-text {
   font-family: "Vampiro One", cursive;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #6b7280 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #e5e7eb 50%, #9ca3af 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 0.02em;
-  text-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 /* Hover effects */
@@ -166,25 +171,24 @@
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Focus styles */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+  @apply focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black;
 }
 
 /* Button variants */
 .btn-primary {
-  @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-ring rounded-full;
+  @apply bg-white text-black hover:bg-gray-100 focus-ring rounded-full;
 }
 
 .btn-secondary {
-  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border focus-ring rounded-full;
+  @apply bg-gray-800 text-white hover:bg-gray-700 border border-gray-700 focus-ring rounded-full;
 }
 
 .btn-ghost {
-  @apply bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-ring rounded-full;
+  @apply bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white focus-ring rounded-full;
 }
 
 /* Global button styling */
@@ -194,15 +198,20 @@ button,
   @apply rounded-full;
 }
 
+/* Ensure all shadcn buttons are rounded-full */
+.inline-flex.items-center.justify-center {
+  @apply rounded-full;
+}
+
 /* Card styles */
 .card-hover {
-  @apply transition-all duration-300 hover:bg-accent/50 hover:border-border/60;
+  @apply transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600;
 }
 
 /* Loading skeleton */
 .skeleton {
-  @apply animate-pulse bg-muted rounded;
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  @apply animate-pulse bg-gray-800 rounded;
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -218,7 +227,7 @@ button,
 
 /* Video player enhancements */
 .video-container {
-  @apply relative overflow-hidden rounded-xl bg-muted;
+  @apply relative overflow-hidden rounded-xl bg-black;
 }
 
 .video-overlay {
@@ -231,29 +240,29 @@ button,
 
 /* Form styles */
 .form-input {
-  @apply bg-background border-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/20 rounded-lg;
+  @apply bg-gray-900 border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-white/20 rounded-lg;
 }
 
 .form-label {
-  @apply text-sm font-medium text-foreground mb-2 block;
+  @apply text-sm font-medium text-gray-200 mb-2 block;
 }
 
 /* Navigation styles */
 .nav-link {
-  @apply text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent;
+  @apply text-gray-300 hover:text-white transition-colors duration-200 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800;
 }
 
 .nav-link.active {
-  @apply text-foreground bg-accent;
+  @apply text-white bg-gray-800;
 }
 
 /* Badge styles */
 .badge-primary {
-  @apply bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded-full;
+  @apply bg-white text-black text-xs font-medium px-2 py-1 rounded-full;
 }
 
 .badge-secondary {
-  @apply bg-secondary text-secondary-foreground text-xs font-medium px-2 py-1 rounded-full border border-border;
+  @apply bg-gray-800 text-gray-300 text-xs font-medium px-2 py-1 rounded-full border border-gray-700;
 }
 
 /* Responsive utilities */
@@ -267,9 +276,9 @@ button,
   }
 }
 
-/* Light mode optimizations */
-@media (prefers-color-scheme: light) {
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
   html {
-    color-scheme: light;
+    color-scheme: dark;
   }
 }

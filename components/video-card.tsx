@@ -206,13 +206,13 @@ export default function VideoCard({ video, onUpdate }: VideoCardProps) {
   }
 
   return (
-    <div className="bg-card rounded-lg overflow-hidden border border-border">
-      <div className="aspect-video bg-muted relative">
+    <div className="bg-gray-900 rounded-lg overflow-hidden">
+      <div className="aspect-video bg-gray-800 relative">
         <video src={video.video_url} poster={video.thumbnail_url} controls className="w-full h-full object-cover" />
       </div>
 
       <div className="p-4">
-        <h3 className="font-bold text-foreground mb-2 line-clamp-2">{video.title}</h3>
+        <h3 className="font-bold text-white mb-2 line-clamp-2">{video.title}</h3>
         <div className="flex items-center mb-2">
           {video.channel_avatar && (
             <img
@@ -221,10 +221,10 @@ export default function VideoCard({ video, onUpdate }: VideoCardProps) {
               className="w-6 h-6 rounded-full mr-2"
             />
           )}
-          <p className="text-muted-foreground text-sm">@{video.channel_name}</p>
+          <p className="text-gray-400 text-sm">@{video.channel_name}</p>
         </div>
-        <p className="text-muted-foreground text-sm mb-2">{video.views} views</p>
-        <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{video.description}</p>
+        <p className="text-gray-300 text-sm mb-2">{video.views} views</p>
+        <p className="text-gray-300 text-sm mb-4 line-clamp-3">{video.description}</p>
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
@@ -232,7 +232,7 @@ export default function VideoCard({ video, onUpdate }: VideoCardProps) {
               variant="ghost"
               size="sm"
               onClick={handleLike}
-              className={`text-muted-foreground hover:text-foreground ${liked ? "text-red-500" : ""}`}
+              className={`text-white hover:bg-gray-800 ${liked ? "text-red-500" : ""}`}
             >
               <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-current" : ""}`} />
               {video.likes}
@@ -242,7 +242,7 @@ export default function VideoCard({ video, onUpdate }: VideoCardProps) {
               variant="ghost"
               size="sm"
               onClick={handleDislike}
-              className={`text-muted-foreground hover:text-foreground ${disliked ? "text-red-500" : ""}`}
+              className={`text-white hover:bg-gray-800 ${disliked ? "text-red-500" : ""}`}
             >
               <ThumbsDown className={`w-4 h-4 mr-1 ${disliked ? "fill-current" : ""}`} />
               {video.dislikes}
@@ -255,7 +255,7 @@ export default function VideoCard({ video, onUpdate }: VideoCardProps) {
                 setShowComments(!showComments)
                 if (!showComments) fetchComments()
               }}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-white hover:bg-gray-800"
             >
               <MessageCircle className="w-4 h-4 mr-1" />
               {comments.length}
@@ -263,40 +263,26 @@ export default function VideoCard({ video, onUpdate }: VideoCardProps) {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDownload}
-              className="text-muted-foreground hover:text-foreground"
-            >
+            <Button variant="ghost" size="sm" onClick={handleDownload} className="text-white hover:bg-gray-800">
               <Download className="w-4 h-4" />
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShare}
-              className="text-muted-foreground hover:text-foreground"
-            >
+            <Button variant="ghost" size="sm" onClick={handleShare} className="text-white hover:bg-gray-800">
               <Share2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
         {showComments && (
-          <div className="border-t border-border pt-4">
+          <div className="border-t border-gray-700 pt-4">
             <div className="flex space-x-2 mb-4">
               <Input
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a comment..."
-                className="bg-background border-border text-foreground"
+                className="bg-gray-800 border-gray-600 text-white"
               />
-              <Button
-                onClick={handleComment}
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
+              <Button onClick={handleComment} size="sm" className="bg-white text-black hover:bg-gray-200">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
@@ -312,9 +298,9 @@ export default function VideoCard({ video, onUpdate }: VideoCardProps) {
                         className="w-4 h-4 rounded-full mr-2"
                       />
                     )}
-                    <span className="font-medium text-foreground">@{comment.user_name}</span>
+                    <span className="font-medium text-white">@{comment.user_name}</span>
                   </div>
-                  <p className="text-muted-foreground ml-6">{comment.content}</p>
+                  <p className="text-gray-300 ml-6">{comment.content}</p>
                 </div>
               ))}
             </div>

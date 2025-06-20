@@ -91,7 +91,7 @@ export default function ModernVideoCard({
       <Link href={`/watch/${video.id}`}>
         <div className="space-y-3">
           {/* Thumbnail Container */}
-          <div className="relative aspect-video overflow-hidden rounded-2xl bg-muted">
+          <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-900">
             <img
               src={video.thumbnail_url || "/placeholder.svg"}
               alt={video.title}
@@ -127,12 +127,12 @@ export default function ModernVideoCard({
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border-border">
-                    <DropdownMenuItem onClick={handleShare} className="text-foreground hover:bg-accent">
+                  <DropdownMenuContent align="end" className="bg-gray-900 border-gray-700">
+                    <DropdownMenuItem onClick={handleShare} className="text-white hover:bg-gray-800">
                       <Share2 className="w-4 h-4 mr-2" />
                       Share
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSaveToPlaylist} className="text-foreground hover:bg-accent">
+                    <DropdownMenuItem onClick={handleSaveToPlaylist} className="text-white hover:bg-gray-800">
                       <Bookmark className="w-4 h-4 mr-2" />
                       Save to playlist
                     </DropdownMenuItem>
@@ -160,15 +160,15 @@ export default function ModernVideoCard({
             {/* Video Details */}
             <div className="flex-1 min-w-0 space-y-1">
               {/* Video Title */}
-              <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-2 group-hover:text-muted-foreground transition-colors">
+              <h3 className="font-semibold text-white text-base leading-tight line-clamp-2 group-hover:text-gray-200 transition-colors">
                 {video.title}
               </h3>
 
               {/* Channel Name */}
-              <p className="text-muted-foreground text-sm font-medium">{video.channel_name}</p>
+              <p className="text-gray-400 text-sm font-medium">{video.channel_name}</p>
 
               {/* Views and Date */}
-              <div className="flex items-center text-muted-foreground text-sm">
+              <div className="flex items-center text-gray-400 text-sm">
                 <span>{formatViews(video.views)} views</span>
                 <span className="mx-1">•</span>
                 <span>{formatTimeAgo(video.uploaded_at)}</span>

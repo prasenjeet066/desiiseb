@@ -30,8 +30,8 @@ function SearchComponent() {
     <form onSubmit={handleSearch} className="relative group">
       <div
         className={`relative flex items-center transition-all duration-300 ${
-          isSearchFocused ? "ring-2 ring-primary/20 scale-[1.02]" : ""
-        } rounded-full bg-muted/80 backdrop-blur-sm border border-border hover:border-border/60`}
+          isSearchFocused ? "ring-2 ring-white/20 scale-[1.02]" : ""
+        } rounded-full bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 hover:border-gray-600`}
       >
         <Input
           type="text"
@@ -40,7 +40,7 @@ function SearchComponent() {
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
-          className="flex-1 bg-transparent border-0 text-foreground placeholder-muted-foreground focus:ring-0 rounded-l-full pl-4 pr-10 h-11"
+          className="flex-1 bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 rounded-l-full pl-4 pr-10 h-11"
         />
 
         {searchQuery && (
@@ -49,7 +49,7 @@ function SearchComponent() {
             variant="ghost"
             size="sm"
             onClick={clearSearch}
-            className="absolute right-12 text-muted-foreground hover:text-foreground p-1 h-auto"
+            className="absolute right-12 text-gray-400 hover:text-white p-1 h-auto"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -59,7 +59,7 @@ function SearchComponent() {
           type="submit"
           variant="ghost"
           size="sm"
-          className="rounded-r-full px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="rounded-r-full px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-800"
         >
           <Search className="w-4 h-4" />
         </Button>
@@ -70,7 +70,7 @@ function SearchComponent() {
 
 export default function PublicHeader() {
   return (
-    <header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-40 transition-all duration-300">
+    <header className="border-b border-gray-800/50 bg-black/95 backdrop-blur-md sticky top-0 z-40 transition-all duration-300">
       <div className="container mx-auto px-4 py-3 flex items-center gap-4">
         {/* Logo */}
         <Link
@@ -82,7 +82,9 @@ export default function PublicHeader() {
 
         {/* Search Bar */}
         <div className="flex-1 max-w-2xl mx-4">
-          <Suspense fallback={<div className="h-11 bg-muted/80 rounded-full border border-border animate-pulse" />}>
+          <Suspense
+            fallback={<div className="h-11 bg-gray-900/80 rounded-full border border-gray-700/50 animate-pulse" />}
+          >
             <SearchComponent />
           </Suspense>
         </div>
@@ -90,17 +92,13 @@ export default function PublicHeader() {
         {/* Auth Buttons */}
         <nav className="flex items-center space-x-2 flex-shrink-0">
           <Link href="/auth/login">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full"
-            >
+            <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-gray-800 rounded-full">
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
             </Button>
           </Link>
           <Link href="/auth/signup">
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
+            <Button size="sm" className="bg-white text-black hover:bg-gray-200 rounded-full">
               <UserPlus className="w-4 h-4 mr-2" />
               Sign Up
             </Button>
