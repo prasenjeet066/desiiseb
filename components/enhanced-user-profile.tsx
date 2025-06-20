@@ -215,12 +215,17 @@ export default function EnhancedUserProfile({ user }: EnhancedUserProfileProps) 
 
                 <div className="flex items-center gap-3 shrink-0">
                   <Link href="/profile/edit">
-                    <Button className="bg-none text-gray-100 hover:bg-gray-200">
+                    <Button className="bg-none text-gray-100">
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
                   </Link>
-                  
+                  <Link href="/studio">
+                    <Button className="bg-yellow-400 text-gray-800">
+                      
+                      Go Studio
+                    </Button>
+                  </Link>
                   
 
                   <DropdownMenu>
