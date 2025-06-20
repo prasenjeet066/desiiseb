@@ -1,5 +1,5 @@
-import VideoWatchSkeleton from "@/components/skeletons/video-watch-skeleton"
+import { PageLoadingSpinner } from "@/components/ui/loading-spinner"
 
 export default function Loading() {
-  return <VideoWatchSkeleton />
+  return <PageLoadingSpinner />
 }
